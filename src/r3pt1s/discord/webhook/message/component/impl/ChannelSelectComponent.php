@@ -42,7 +42,7 @@ final class ChannelSelectComponent extends CustomComponent implements ActionRowC
             throw new UnsupportedOperationException('Your $defaultValues cannot be greater than ' . $this->maxValues);
 
         return [
-            "default_values" => $this->defaultValues,
+            "default_values" => array_map(fn(SelectDefaultValue $dV) => $dV->write(), $this->defaultValues),
             "placeholder" => $this->placeholder,
             "min_values" => $this->minValues,
             "max_values" => $this->maxValues,

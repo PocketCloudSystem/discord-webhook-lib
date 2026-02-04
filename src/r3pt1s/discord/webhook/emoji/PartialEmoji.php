@@ -2,10 +2,10 @@
 
 namespace r3pt1s\discord\webhook\emoji;
 
-use JsonSerializable;
-use r3pt1s\discord\webhook\WebhookHelper;
+use pocketcloud\cloud\util\misc\Writeable;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final readonly class PartialEmoji implements JsonSerializable {
+final readonly class PartialEmoji implements Writeable {
 
     public function __construct(
         private string $emojiId,
@@ -20,7 +20,7 @@ final readonly class PartialEmoji implements JsonSerializable {
         return $this->emojiName;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "id" => $this->emojiId,
             "name" => $this->emojiName

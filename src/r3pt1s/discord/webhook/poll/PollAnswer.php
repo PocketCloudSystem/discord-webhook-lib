@@ -2,11 +2,11 @@
 
 namespace r3pt1s\discord\webhook\poll;
 
-use JsonSerializable;
+use pocketcloud\cloud\util\misc\Writeable;
 use r3pt1s\discord\webhook\emoji\PartialEmoji;
-use r3pt1s\discord\webhook\WebhookHelper;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final readonly class PollAnswer implements JsonSerializable {
+final readonly class PollAnswer implements Writeable {
 
     public function __construct(
         private int $answerId,
@@ -26,12 +26,12 @@ final readonly class PollAnswer implements JsonSerializable {
         return $this->emoji;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "answer_id" => $this->answerId,
             "poll_media" => [
                 "text" => $this->answer,
-                "emoji" => $this->emoji
+                "emoji" => $this->emoji?->write()
             ]
         ]);
     }

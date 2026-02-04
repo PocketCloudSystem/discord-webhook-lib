@@ -2,10 +2,10 @@
 
 namespace r3pt1s\discord\webhook\message\embed;
 
-use JsonSerializable;
-use r3pt1s\discord\webhook\WebhookHelper;
+use pocketcloud\cloud\util\misc\Writeable;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final readonly class EmbedField implements JsonSerializable {
+final readonly class EmbedField implements Writeable {
 
     private function __construct(
         private string $name,
@@ -25,7 +25,7 @@ final readonly class EmbedField implements JsonSerializable {
         return $this->inline;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "name" => $this->name,
             "value" => $this->value,

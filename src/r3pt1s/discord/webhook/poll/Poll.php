@@ -2,11 +2,11 @@
 
 namespace r3pt1s\discord\webhook\poll;
 
-use JsonSerializable;
+use pocketcloud\cloud\util\misc\Writeable;
 use r3pt1s\discord\webhook\emoji\PartialEmoji;
-use r3pt1s\discord\webhook\WebhookHelper;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final class Poll implements JsonSerializable {
+final class Poll implements Writeable {
 
     /** @var int The highest possible expiry timestamp, default is 24 hours, max is 32 days */
     public const int MAX_EXPIRY_TIMESTAMP = 60 * 60 * 24 * 32;
@@ -51,12 +51,12 @@ final class Poll implements JsonSerializable {
         return $this->layoutType;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "question" => [
-                "text" => $this->question,
+                "text" => $this->question
             ],
-            "answers" => $this->answers,
+            "answers" => array_map(fn(PollAnswer $answer) => $answer->write(), $this->answers),
             "expiry" => $this->expiry,
             "allow_multiselect" => $this->allowMultiSelect,
             "layout_type" => ($this->layoutType ?? PollLayoutType::DEFAULT)->value

@@ -2,10 +2,10 @@
 
 namespace r3pt1s\discord\webhook\message\mention;
 
-use JsonSerializable;
-use r3pt1s\discord\webhook\WebhookHelper;
+use pocketcloud\cloud\util\misc\Writeable;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final class AllowedMention implements JsonSerializable {
+final class AllowedMention implements Writeable {
 
     public const int MAX_ROLES = 100;
     public const int MAX_USERS = 100;
@@ -43,7 +43,7 @@ final class AllowedMention implements JsonSerializable {
         return $this->users;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "parse" => $this->allowedMentions,
             "roles" => $this->roles,

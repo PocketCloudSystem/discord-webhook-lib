@@ -2,17 +2,16 @@
 
 namespace r3pt1s\discord\webhook\message\component\misc;
 
-use JsonSerializable;
-use r3pt1s\discord\webhook\WebhookHelper;
+use pocketcloud\cloud\util\misc\Writeable;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final readonly class UnfurledMediaItem implements JsonSerializable {
+final readonly class UnfurledMediaItem implements Writeable {
 
     private function __construct(private string $url) {}
 
-
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
-            "url" => $this->url,
+            "url" => $this->url
         ]);
     }
 

@@ -2,10 +2,10 @@
 
 namespace r3pt1s\discord\webhook\message\component\misc;
 
-use JsonSerializable;
-use r3pt1s\discord\webhook\WebhookHelper;
+use pocketcloud\cloud\util\misc\Writeable;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final readonly class MediaGalleryItem implements JsonSerializable {
+final readonly class MediaGalleryItem implements Writeable {
 
     public function __construct(
         private UnfurledMediaItem $mediaItem,
@@ -25,9 +25,9 @@ final readonly class MediaGalleryItem implements JsonSerializable {
         return $this->spoiler;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
-            "media" => $this->mediaItem,
+            "media" => $this->mediaItem->write(),
             "description" => $this->description,
             "spoiler" => $this->spoiler
         ]);

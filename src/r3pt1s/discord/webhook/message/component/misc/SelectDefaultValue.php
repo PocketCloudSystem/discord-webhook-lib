@@ -2,9 +2,9 @@
 
 namespace r3pt1s\discord\webhook\message\component\misc;
 
-use JsonSerializable;
+use pocketcloud\cloud\util\misc\Writeable;
 
-final readonly class SelectDefaultValue implements JsonSerializable {
+final readonly class SelectDefaultValue implements Writeable {
 
     private function __construct(
         private string $snowflakeId,
@@ -19,7 +19,7 @@ final readonly class SelectDefaultValue implements JsonSerializable {
         return $this->representationType;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return [
             "id" => $this->snowflakeId,
             "type" => $this->representationType->value,

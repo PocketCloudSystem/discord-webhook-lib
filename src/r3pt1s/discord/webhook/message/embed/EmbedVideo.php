@@ -2,10 +2,10 @@
 
 namespace r3pt1s\discord\webhook\message\embed;
 
-use JsonSerializable;
-use r3pt1s\discord\webhook\WebhookHelper;
+use pocketcloud\cloud\util\misc\Writeable;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final readonly class EmbedVideo implements JsonSerializable {
+final readonly class EmbedVideo implements Writeable {
 
     private function __construct(
         private string $url,
@@ -30,7 +30,7 @@ final readonly class EmbedVideo implements JsonSerializable {
         return $this->width;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "url" => $this->url,
             "proxy_url" => $this->proxyUrl,

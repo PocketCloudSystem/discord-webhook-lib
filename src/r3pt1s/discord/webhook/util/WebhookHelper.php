@@ -1,6 +1,6 @@
 <?php
 
-namespace r3pt1s\discord\webhook;
+namespace r3pt1s\discord\webhook\util;
 
 final class WebhookHelper {
 

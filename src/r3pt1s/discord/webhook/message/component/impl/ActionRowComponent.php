@@ -21,7 +21,7 @@ final class ActionRowComponent extends MessageComponent implements ContainerChil
     }
 
     public function getComponentData(): array {
-        return ["components" => $this->components];
+        return ["components" => array_map(fn(MessageComponent $component) => $component->write(), $this->components)];
     }
 
     public function getComponents(): array {

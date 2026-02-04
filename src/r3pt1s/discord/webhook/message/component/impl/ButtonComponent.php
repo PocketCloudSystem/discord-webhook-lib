@@ -38,26 +38,26 @@ final class ButtonComponent extends MessageComponent implements ActionRowChildCo
     }
 
     public static function primary(string $customId, ?string $label, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
-        return new self($customId, ButtonStyle::PRIMARY, ["label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
+        return new self($customId, ButtonStyle::PRIMARY, ["label" => $label, "emoji" => $emoji?->write(), "disabled" => $disabled]);
     }
 
     public static function secondary(string $customId, ?string $label, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
-        return new self($customId, ButtonStyle::SECONDARY, ["label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
+        return new self($customId, ButtonStyle::SECONDARY, ["label" => $label, "emoji" => $emoji?->write(), "disabled" => $disabled]);
     }
 
     public static function success(string $customId, ?string $label, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
-        return new self($customId, ButtonStyle::SUCCESS, ["label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
+        return new self($customId, ButtonStyle::SUCCESS, ["label" => $label, "emoji" => $emoji?->write(), "disabled" => $disabled]);
     }
 
     public static function danger(string $customId, ?string $label, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
-        return new self($customId, ButtonStyle::DANGER, ["label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
+        return new self($customId, ButtonStyle::DANGER, ["label" => $label, "emoji" => $emoji?->write(), "disabled" => $disabled]);
     }
 
     public static function link(string $url, ?string $label, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
-        return new self(null, ButtonStyle::LINK, ["url" => $url, "label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
+        return new self(null, ButtonStyle::LINK, ["url" => $url, "label" => $label, "emoji" => $emoji?->write(), "disabled" => $disabled]);
     }
 
     public static function premium(string $skuId, ?string $label, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
-        return new self(null, ButtonStyle::PREMIUM, ["sku_id" => $skuId, "label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
+        return new self(null, ButtonStyle::PREMIUM, ["sku_id" => $skuId, "label" => $label, "emoji" => $emoji?->write(), "disabled" => $disabled]);
     }
 }

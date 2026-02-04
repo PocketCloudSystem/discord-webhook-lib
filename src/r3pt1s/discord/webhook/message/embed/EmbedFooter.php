@@ -2,10 +2,10 @@
 
 namespace r3pt1s\discord\webhook\message\embed;
 
-use JsonSerializable;
-use r3pt1s\discord\webhook\WebhookHelper;
+use pocketcloud\cloud\util\misc\Writeable;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final readonly class EmbedFooter implements JsonSerializable {
+final readonly class EmbedFooter implements Writeable {
 
     private function __construct(
         private string $text,
@@ -25,7 +25,7 @@ final readonly class EmbedFooter implements JsonSerializable {
         return $this->proxyIconUrl;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "text" => $this->text,
             "icon_url" => $this->iconUrl,

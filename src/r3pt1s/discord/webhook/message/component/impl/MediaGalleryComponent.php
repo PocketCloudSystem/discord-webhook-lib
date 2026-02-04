@@ -35,7 +35,7 @@ final class MediaGalleryComponent extends MessageComponent implements ContainerC
             throw new UnsupportedOperationException('Your $items cannot be less than ' . self::MIN_ITEMS . ' or greater than ' . self::MAX_ITEMS);
 
         return [
-            "items" => $this->items
+            "items" => array_map(fn(MediaGalleryItem $item) => $item->write(), $this->items),
         ];
     }
 

@@ -23,7 +23,7 @@ final class ThumbnailComponent extends MessageComponent implements SectionAccess
 
     public function getComponentData(): array {
         return [
-            "media" => $this->mediaItem,
+            "media" => $this->mediaItem->write(),
             "description" => $this->description,
             "spoiler" => $this->spoiler
         ];

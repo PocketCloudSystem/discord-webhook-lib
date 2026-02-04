@@ -2,11 +2,11 @@
 
 namespace r3pt1s\discord\webhook\message\component;
 
-use JsonSerializable;
+use pocketcloud\cloud\util\misc\Writeable;
 use r3pt1s\discord\webhook\message\component\misc\ComponentType;
-use r3pt1s\discord\webhook\WebhookHelper;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-abstract class MessageComponent implements JsonSerializable {
+abstract class MessageComponent implements Writeable {
 
     private array $data;
 
@@ -27,7 +27,7 @@ abstract class MessageComponent implements JsonSerializable {
 
     abstract public function getComponentData(): array;
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         $this->appendData($this->getComponentData());
         return WebhookHelper::removeNullFields($this->data);
     }

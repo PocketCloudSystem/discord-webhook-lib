@@ -36,8 +36,8 @@ final class SectionComponent extends MessageComponent implements ContainerChildC
             throw new UnsupportedOperationException('Your $components cannot be less than ' . self::MIN_COMPONENTS . ' or greater than ' . self::MAX_COMPONENTS);
 
         return [
-            "components" => $this->components,
-            "accessory" => $this->accessory
+            "components" => array_map(fn(MessageComponent $dV) => $dV->write(), $this->components),
+            "accessory" => $this->accessory->write()
         ];
     }
 

@@ -2,10 +2,10 @@
 
 namespace r3pt1s\discord\webhook\message\embed;
 
-use JsonSerializable;
-use r3pt1s\discord\webhook\WebhookHelper;
+use pocketcloud\cloud\util\misc\Writeable;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final class Embed implements JsonSerializable {
+final class Embed implements Writeable {
 
     private ?string $title = null;
     private ?string $description = null;
@@ -132,20 +132,20 @@ final class Embed implements JsonSerializable {
         return $this->provider;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "title" => $this->title,
             "description" => $this->description,
             "url" => $this->url,
             "timestamp" => $this->timestamp ? gmdate("c", $this->timestamp) : null,
             "color" => $this->color,
-            "fields" => $this->getFields(),
-            "author" => $this->author,
-            "footer" => $this->footer,
-            "image" => $this->image,
-            "thumbnail" => $this->thumbnail,
-            "video" => $this->video,
-            "provider" => $this->provider
+            "fields" => array_map(fn(EmbedField $field) => $field->write(), $this->fields),
+            "author" => $this->author?->write(),
+            "footer" => $this->footer?->write(),
+            "image" => $this->image?->write(),
+            "thumbnail" => $this->thumbnail?->write(),
+            "video" => $this->video?->write(),
+            "provider" => $this->provider?->write()
         ]);
     }
 

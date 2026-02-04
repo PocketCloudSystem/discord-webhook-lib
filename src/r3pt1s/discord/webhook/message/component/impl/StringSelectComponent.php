@@ -50,7 +50,7 @@ final class StringSelectComponent extends CustomComponent implements ActionRowCh
     public function getComponentData(): array {
         return [
             "placeholder" => $this->placeholder,
-            "options" => $this->options,
+            "options" => array_map(fn(SelectOption $option) => $option->write(), $this->options),
             "min_values" => $this->minValues,
             "max_values" => $this->maxValues,
             "required" => $this->required,

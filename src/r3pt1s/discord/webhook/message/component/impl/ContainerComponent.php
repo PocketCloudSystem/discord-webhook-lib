@@ -28,7 +28,7 @@ final class ContainerComponent extends MessageComponent {
 
     public function getComponentData(): array {
         return [
-            "components" => $this->components,
+            "components" => array_map(fn(MessageComponent $component) => $component->write(), $this->components),
             "accent_color" => $this->accentColor,
             "spoiler" => $this->spoiler
         ];

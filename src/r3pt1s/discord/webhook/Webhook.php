@@ -9,9 +9,7 @@ final readonly class Webhook {
     /**
      * @param string $url The base discord webhook url
      */
-    public function __construct(
-        private string $url
-    ) {}
+    public function __construct(private string $url) {}
 
     public function createMessage(bool $wait, ?string $threadId = null, bool $withComponents = false): Message {
         return new Message($wait, $threadId, $withComponents, $this);

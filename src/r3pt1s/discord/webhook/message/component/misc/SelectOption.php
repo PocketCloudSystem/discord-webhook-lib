@@ -2,11 +2,11 @@
 
 namespace r3pt1s\discord\webhook\message\component\misc;
 
-use JsonSerializable;
+use pocketcloud\cloud\util\misc\Writeable;
 use r3pt1s\discord\webhook\emoji\PartialEmoji;
-use r3pt1s\discord\webhook\WebhookHelper;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 
-final readonly class SelectOption implements JsonSerializable {
+final readonly class SelectOption implements Writeable {
 
     private function __construct(
         private string $label,
@@ -36,12 +36,12 @@ final readonly class SelectOption implements JsonSerializable {
         return $this->default;
     }
 
-    public function jsonSerialize(): array {
+    public function write(): array {
         return WebhookHelper::removeNullFields([
             "label" => $this->label,
             "value" => $this->value,
             "description" => $this->description,
-            "emoji" => $this->emoji,
+            "emoji" => $this->emoji?->write(),
             "default" => $this->default
         ]);
     }

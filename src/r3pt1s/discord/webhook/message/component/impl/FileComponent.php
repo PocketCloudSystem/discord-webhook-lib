@@ -26,7 +26,7 @@ final class FileComponent extends MessageComponent implements ContainerChildComp
 
     public function getComponentData(): array {
         return [
-            "file" => $this->mediaItem,
+            "file" => $this->mediaItem->write(),
             "spoiler" => $this->spoiler
         ];
     }
