@@ -3,7 +3,6 @@
 namespace r3pt1s\discord\webhook\message\component\impl;
 
 use InvalidArgumentException;
-use pmmp\thread\ThreadSafeArray;
 use pocketcloud\cloud\exception\UnsupportedOperationException;
 use r3pt1s\discord\webhook\message\component\MessageComponent;
 use r3pt1s\discord\webhook\message\component\misc\ComponentType;
@@ -17,12 +16,7 @@ final class MediaGalleryComponent extends MessageComponent implements ContainerC
     public const int MIN_ITEMS = 1;
     public const int MAX_ITEMS = 10;
 
-    private ThreadSafeArray $items;
-
-    public function __construct() {
-        parent::__construct();
-        $this->items = new ThreadSafeArray();
-    }
+    private array $items = [];
 
     public function addItem(UnfurledMediaItem|string $urlOrMediaItem, ?string $description = null,  ?bool $spoiler = null): self {
         if ($description !== null && strlen($description) > self::MAX_DESCRIPTION_LENGTH) throw new InvalidArgumentException("Your description is too big");
@@ -41,12 +35,12 @@ final class MediaGalleryComponent extends MessageComponent implements ContainerC
             throw new UnsupportedOperationException('Your $items cannot be less than ' . self::MIN_ITEMS . ' or greater than ' . self::MAX_ITEMS);
 
         return [
-            "items" => (array) $this->items
+            "items" => $this->items
         ];
     }
 
     public function getItems(): array {
-        return (array) $this->items;
+        return $this->items;
     }
 
     public static function create(): self {

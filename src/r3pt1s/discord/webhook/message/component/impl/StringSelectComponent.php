@@ -3,7 +3,6 @@
 namespace r3pt1s\discord\webhook\message\component\impl;
 
 use InvalidArgumentException;
-use pmmp\thread\ThreadSafeArray;
 use pocketcloud\cloud\exception\UnsupportedOperationException;
 use r3pt1s\discord\webhook\emoji\PartialEmoji;
 use r3pt1s\discord\webhook\message\component\CustomComponent;
@@ -16,7 +15,7 @@ final class StringSelectComponent extends CustomComponent implements ActionRowCh
 
     public const int MAX_OPTIONS = 25;
 
-    private ThreadSafeArray $options;
+    private array $options = [];
 
     private function __construct(
         string $customId,
@@ -36,8 +35,6 @@ final class StringSelectComponent extends CustomComponent implements ActionRowCh
 
         if ($this->maxValues !== null && ($this->maxValues < ComponentConstants::MIN_MAX_VALUES || $this->maxValues > ComponentConstants::MAX_MAX_VALUES))
             throw new InvalidArgumentException('$maxValues cannot be less than ' . ComponentConstants::MIN_MIN_VALUES . ' or greater than ' . ComponentConstants::MAX_MIN_VALUES);
-
-        $this->options = new ThreadSafeArray();
     }
 
     public function addOption(string $label, string $value, ?string $description = null, ?PartialEmoji $emoji = null, ?bool $default = null): self {
@@ -53,7 +50,7 @@ final class StringSelectComponent extends CustomComponent implements ActionRowCh
     public function getComponentData(): array {
         return [
             "placeholder" => $this->placeholder,
-            "options" => (array) $this->options,
+            "options" => $this->options,
             "min_values" => $this->minValues,
             "max_values" => $this->maxValues,
             "required" => $this->required,
@@ -62,7 +59,7 @@ final class StringSelectComponent extends CustomComponent implements ActionRowCh
     }
 
     public function getOptions(): array {
-        return (array) $this->options;
+        return $this->options;
     }
 
     public function getPlaceholder(): ?string {

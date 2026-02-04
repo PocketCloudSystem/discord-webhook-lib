@@ -3,18 +3,17 @@
 namespace r3pt1s\discord\webhook\message\component\misc;
 
 use JsonSerializable;
-use pmmp\thread\ThreadSafe;
 use r3pt1s\discord\webhook\emoji\PartialEmoji;
 use r3pt1s\discord\webhook\WebhookHelper;
 
-final class SelectOption extends ThreadSafe implements JsonSerializable {
+final readonly class SelectOption implements JsonSerializable {
 
     private function __construct(
-        private readonly string $label,
-        private readonly string $value,
-        private readonly ?string $description = null,
-        private readonly ?PartialEmoji $emoji = null,
-        private readonly ?bool $default = null
+        private string $label,
+        private string $value,
+        private ?string $description = null,
+        private ?PartialEmoji $emoji = null,
+        private ?bool $default = null
     ) {}
 
     public function getLabel(): string {

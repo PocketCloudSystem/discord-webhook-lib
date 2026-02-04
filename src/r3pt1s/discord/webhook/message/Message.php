@@ -7,8 +7,6 @@ use InvalidArgumentException;
 use JsonException;
 use JsonSerializable;
 use LogicException;
-use pmmp\thread\ThreadSafe;
-use pmmp\thread\ThreadSafeArray;
 use pocketcloud\cloud\exception\UnsupportedOperationException;
 use pocketcloud\cloud\scheduler\AsyncPool;
 use pocketcloud\cloud\util\promise\Promise;
@@ -20,7 +18,7 @@ use r3pt1s\discord\webhook\poll\Poll;
 use r3pt1s\discord\webhook\task\DiscordSendDataTask;
 use r3pt1s\discord\webhook\Webhook;
 
-final class Message extends ThreadSafe implements JsonSerializable {
+final class Message implements JsonSerializable {
 
     public const int MAX_CONTENT_CHARACTERS = 2000;
     public const int MAX_EMBEDS = 10;
@@ -32,14 +30,14 @@ final class Message extends ThreadSafe implements JsonSerializable {
     private ?string $avatarUrl = null;
     private bool $textToSpeech = false;
 
-    private ThreadSafeArray $embeds;
+    private array $embeds = [];
     private ?AllowedMention $allowedMention = null;
-    private ThreadSafeArray $components;
-    private ThreadSafeArray $files;
-    private ThreadSafeArray $attachments;
+    private array $components = [];
+    private array $files = [];
+    private array $attachments = [];
     private int $flags = 0;
     private ?string $threadName = null;
-    private ThreadSafeArray $threadAppliedTags;
+    private array $threadAppliedTags = [];
     private ?Poll $poll = null;
 
     /**
@@ -52,39 +50,49 @@ final class Message extends ThreadSafe implements JsonSerializable {
         private readonly ?string $threadId = null,
         private readonly bool $withComponents = false,
         private readonly ?Webhook $webhook = null
-    ) {
-        $this->embeds = new ThreadSafeArray();
-        $this->components = new ThreadSafeArray();
-        $this->files = new ThreadSafeArray();
-        $this->attachments = new ThreadSafeArray();
-        $this->threadAppliedTags = new ThreadSafeArray();
-    }
+    ) {}
 
     public function send(): Promise {
         if ($this->webhook === null) throw new LogicException("Please create a message via Webhook->createMessage()");
         $promise = new Promise();
-        AsyncPool::getInstance()->submitTask(new DiscordSendDataTask($this->webhook->getUrl(), $this, static function (bool|string $response, int $statusCode) use ($promise): void {
-            if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
-                $promise->reject([$response, $statusCode]);
-                return;
-            }
+        AsyncPool::getInstance()->submitTask(new DiscordSendDataTask(
+            $this->webhook->getUrl(),
+            $this->wait,
+            $this->threadId,
+            $this->withComponents,
+            json_encode($this),
+            count($this->files) == 0,
+            static function (bool|string $response, int $statusCode, string $data) use ($promise): void {
+                if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
+                    $promise->reject([$response, $statusCode, $data]);
+                    return;
+                }
 
-            $promise->resolve([$response, $statusCode]);
-        }));
+                $promise->resolve([$response, $statusCode, $data]);
+            }
+        ));
 
         return $promise;
     }
 
     public function sendWithDiffWebhook(Webhook $webhook): Promise {
         $promise = new Promise();
-        AsyncPool::getInstance()->submitTask(new DiscordSendDataTask($webhook->getUrl(), $this, static function (bool|string $response, int $statusCode) use ($promise): void {
-            if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
-                $promise->reject([$response, $statusCode]);
-                return;
-            }
+        AsyncPool::getInstance()->submitTask(new DiscordSendDataTask(
+            $webhook->getUrl(),
+            $this->wait,
+            $this->threadId,
+            $this->withComponents,
+            json_encode($this),
+            count($this->files) == 0,
+            static function (bool|string $response, int $statusCode, string $data) use ($promise): void {
+                if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
+                    $promise->reject([$response, $statusCode, $data]);
+                    return;
+                }
 
-            $promise->resolve([$response, $statusCode]);
-        }));
+                $promise->resolve([$response, $statusCode, $data]);
+            }
+        ));
 
         return $promise;
     }
@@ -145,7 +153,7 @@ final class Message extends ThreadSafe implements JsonSerializable {
     public function addFile(string $filePath, ?string $mimeType = null, ?string $postedFileName = null): self {
         if (!file_exists($filePath)) throw new InvalidArgumentException("File $filePath does not exist");
         $attachmentId = $this->internalFileCounter++;
-        $this->files[$attachmentId] = ThreadSafeArray::fromArray(["filename" => $filePath, "mime_type" => $mimeType, "posted_filename" => $postedFileName ??= basename($filePath)]);
+        $this->files[$attachmentId] = ["filename" => $filePath, "mime_type" => $mimeType, "posted_filename" => $postedFileName ??= basename($filePath)];
         $this->attachments[$attachmentId] = new Attachment($attachmentId, $postedFileName);
         return $this;
     }
@@ -172,7 +180,7 @@ final class Message extends ThreadSafe implements JsonSerializable {
      * @return $this
      */
     public function setThreadAppliedTags(array $threadAppliedTagIds): self {
-       $this->threadAppliedTags = ThreadSafeArray::fromArray($threadAppliedTagIds);
+       $this->threadAppliedTags = $threadAppliedTagIds;
         return $this;
     }
 
@@ -206,7 +214,7 @@ final class Message extends ThreadSafe implements JsonSerializable {
         return $this->textToSpeech;
     }
 
-    public function getEmbeds(): ThreadSafeArray {
+    public function getEmbeds(): array {
         return $this->embeds;
     }
 
@@ -214,15 +222,15 @@ final class Message extends ThreadSafe implements JsonSerializable {
         return $this->allowedMention;
     }
 
-    public function getComponents(): ThreadSafeArray {
+    public function getComponents(): array {
         return $this->components;
     }
 
-    public function getFiles(): ThreadSafeArray {
+    public function getFiles(): array {
         return $this->files;
     }
 
-    public function getAttachments(): ThreadSafeArray {
+    public function getAttachments(): array {
         return $this->attachments;
     }
 
@@ -234,7 +242,7 @@ final class Message extends ThreadSafe implements JsonSerializable {
         return $this->threadName;
     }
 
-    public function getThreadAppliedTags(): ThreadSafeArray {
+    public function getThreadAppliedTags(): array {
         return $this->threadAppliedTags;
     }
 
@@ -261,20 +269,20 @@ final class Message extends ThreadSafe implements JsonSerializable {
         $data = [
             "content" => $this->content,
             "tts" => $this->textToSpeech,
-            "embeds" => (array) $this->embeds
+            "embeds" => $this->embeds
         ];
 
         if ($this->username !== null) $data["username"] = $this->username;
         if ($this->avatarUrl !== null) $data["avatar_url"] = $this->avatarUrl;
         if ($this->allowedMention !== null) $data["allowed_mentions"] = $this->allowedMention;
-        if (!empty($this->components)) $data["components"] = (array) $this->components;
+        if (count($this->components) > 0) $data["components"] = $this->components;
         if ($this->flags !== 0) $data["flags"] = $this->flags;
         if ($this->threadName !== null) $data["thread_name"] = $this->threadName;
-        if (!empty($this->threadAppliedTags)) $data["applied_tags"] = (array) $this->threadAppliedTags;
+        if (count($this->threadAppliedTags) > 0) $data["applied_tags"] = $this->threadAppliedTags;
         if ($this->poll !== null) $data["poll"] = $this->poll;
-        if (!empty($this->files)) {
-            $data["attachments"] = (array) $this->attachments;
-            $data["payload_json"] = json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        if (count($this->files) > 0) {
+            $data["attachments"] = $this->attachments;
+            $data["payload_json"] = json_encode($data, JSON_THROW_ON_ERROR);
             foreach ($this->files as $i => $fileData) {
                 $data["files[$i]"] = new CURLFile(...$fileData);
             }

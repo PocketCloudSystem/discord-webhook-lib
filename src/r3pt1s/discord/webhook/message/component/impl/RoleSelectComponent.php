@@ -2,7 +2,6 @@
 
 namespace r3pt1s\discord\webhook\message\component\impl;
 
-use pmmp\thread\ThreadSafeArray;
 use pocketcloud\cloud\exception\UnsupportedOperationException;
 use r3pt1s\discord\webhook\message\component\CustomComponent;
 use r3pt1s\discord\webhook\message\component\misc\ActionRowChildComponent;
@@ -12,7 +11,7 @@ use r3pt1s\discord\webhook\message\component\misc\SelectDefaultValue;
 
 final class RoleSelectComponent extends CustomComponent implements ActionRowChildComponent {
 
-    private ThreadSafeArray $defaultValues;
+    private array $defaultValues = [];
 
     private function __construct(
         string $customId,
@@ -43,7 +42,7 @@ final class RoleSelectComponent extends CustomComponent implements ActionRowChil
             throw new UnsupportedOperationException('Your $defaultValues cannot be greater than ' . $this->maxValues);
 
         return [
-            "default_values" => (array) $this->defaultValues,
+            "default_values" => $this->defaultValues,
             "placeholder" => $this->placeholder,
             "min_values" => $this->minValues,
             "max_values" => $this->maxValues,
@@ -53,7 +52,7 @@ final class RoleSelectComponent extends CustomComponent implements ActionRowChil
     }
 
     public function getDefaultValues(): array {
-        return (array) $this->defaultValues;
+        return $this->defaultValues;
     }
 
     public function getPlaceholder(): ?string {

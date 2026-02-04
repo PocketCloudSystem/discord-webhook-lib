@@ -3,11 +3,9 @@
 namespace r3pt1s\discord\webhook\message\embed;
 
 use JsonSerializable;
-use pmmp\thread\ThreadSafe;
-use pmmp\thread\ThreadSafeArray;
 use r3pt1s\discord\webhook\WebhookHelper;
 
-final class Embed extends ThreadSafe implements JsonSerializable {
+final class Embed implements JsonSerializable {
 
     private ?string $title = null;
     private ?string $description = null;
@@ -15,7 +13,7 @@ final class Embed extends ThreadSafe implements JsonSerializable {
     private ?int $timestamp = null;
     private ?int $color = null;
 
-    private ThreadSafeArray $fields;
+    private array $fields = [];
 
     private ?EmbedAuthor $author = null;
     private ?EmbedFooter $footer = null;
@@ -24,9 +22,7 @@ final class Embed extends ThreadSafe implements JsonSerializable {
     private ?EmbedVideo $video = null;
     private ?EmbedProvider $provider = null;
 
-    private function __construct() {
-        $this->fields = new ThreadSafeArray();
-    }
+    private function __construct() {}
 
     public function setTitle(?string $title): self {
         $this->title = $title;
@@ -88,6 +84,54 @@ final class Embed extends ThreadSafe implements JsonSerializable {
         return $this;
     }
 
+    public function getTitle(): ?string {
+        return $this->title;
+    }
+
+    public function getDescription(): ?string {
+        return $this->description;
+    }
+
+    public function getUrl(): ?string {
+        return $this->url;
+    }
+
+    public function getTimestamp(): ?int {
+        return $this->timestamp;
+    }
+
+    public function getColor(): ?int {
+        return $this->color;
+    }
+
+    public function getFields(): array {
+        return $this->fields;
+    }
+
+    public function getAuthor(): ?EmbedAuthor {
+        return $this->author;
+    }
+
+    public function getFooter(): ?EmbedFooter {
+        return $this->footer;
+    }
+
+    public function getImage(): ?EmbedImage {
+        return $this->image;
+    }
+
+    public function getThumbnail(): ?EmbedImage {
+        return $this->thumbnail;
+    }
+
+    public function getVideo(): ?EmbedVideo {
+        return $this->video;
+    }
+
+    public function getProvider(): ?EmbedProvider {
+        return $this->provider;
+    }
+
     public function jsonSerialize(): array {
         return WebhookHelper::removeNullFields([
             "title" => $this->title,
@@ -95,7 +139,7 @@ final class Embed extends ThreadSafe implements JsonSerializable {
             "url" => $this->url,
             "timestamp" => $this->timestamp ? gmdate("c", $this->timestamp) : null,
             "color" => $this->color,
-            "fields" => (array) $this->fields,
+            "fields" => $this->getFields(),
             "author" => $this->author,
             "footer" => $this->footer,
             "image" => $this->image,

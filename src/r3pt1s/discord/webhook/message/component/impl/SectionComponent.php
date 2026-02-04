@@ -2,7 +2,6 @@
 
 namespace r3pt1s\discord\webhook\message\component\impl;
 
-use pmmp\thread\ThreadSafeArray;
 use pocketcloud\cloud\exception\UnsupportedOperationException;
 use r3pt1s\discord\webhook\message\component\MessageComponent;
 use r3pt1s\discord\webhook\message\component\misc\ComponentType;
@@ -15,13 +14,8 @@ final class SectionComponent extends MessageComponent implements ContainerChildC
     public const int MIN_COMPONENTS = 1;
     public const int MAX_COMPONENTS = 3;
 
-    private ThreadSafeArray $components;
+    private array $components = [];
     private SectionAccessoryComponent $accessory;
-
-    private function __construct() {
-        parent::__construct();
-        $this->components = new ThreadSafeArray();
-    }
 
     public function addComponent(SectionChildComponent $component): self {
         $this->components[] = $component;
@@ -42,13 +36,13 @@ final class SectionComponent extends MessageComponent implements ContainerChildC
             throw new UnsupportedOperationException('Your $components cannot be less than ' . self::MIN_COMPONENTS . ' or greater than ' . self::MAX_COMPONENTS);
 
         return [
-            "components" => (array) $this->components,
+            "components" => $this->components,
             "accessory" => $this->accessory
         ];
     }
 
     public function getComponents(): array {
-        return (array) $this->components;
+        return $this->components;
     }
 
     public function getAccessory(): SectionAccessoryComponent {

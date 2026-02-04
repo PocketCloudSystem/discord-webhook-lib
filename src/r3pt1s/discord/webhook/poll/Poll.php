@@ -3,28 +3,24 @@
 namespace r3pt1s\discord\webhook\poll;
 
 use JsonSerializable;
-use pmmp\thread\ThreadSafe;
-use pmmp\thread\ThreadSafeArray;
 use r3pt1s\discord\webhook\emoji\PartialEmoji;
 use r3pt1s\discord\webhook\WebhookHelper;
 
-final class Poll extends ThreadSafe implements JsonSerializable {
+final class Poll implements JsonSerializable {
 
     /** @var int The highest possible expiry timestamp, default is 24 hours, max is 32 days */
     public const int MAX_EXPIRY_TIMESTAMP = 60 * 60 * 24 * 32;
     public const int DEFAULT_EXPIRY_TIMESTAMP = 60 * 60 * 24;
 
     private int $pollAnswerCounter = 1;
-    private ThreadSafeArray $answers;
+    private array $answers = [];
 
     private function __construct(
         private readonly string $question,
         private readonly ?string $expiry,
         private readonly bool $allowMultiSelect,
         private readonly ?PollLayoutType $layoutType
-    ) {
-        $this->answers = new ThreadSafeArray();
-    }
+    ) {}
 
     public function addAnswer(string $answer, ?PartialEmoji $emoji = null): self {
         $this->answers[] = new PollAnswer($this->pollAnswerCounter++, $answer, $emoji);
@@ -35,7 +31,7 @@ final class Poll extends ThreadSafe implements JsonSerializable {
         return $this->pollAnswerCounter;
     }
 
-    public function getAnswers(): ThreadSafeArray {
+    public function getAnswers(): array {
         return $this->answers;
     }
 
@@ -60,7 +56,7 @@ final class Poll extends ThreadSafe implements JsonSerializable {
             "question" => [
                 "text" => $this->question,
             ],
-            "answers" => (array) $this->answers,
+            "answers" => $this->answers,
             "expiry" => $this->expiry,
             "allow_multiselect" => $this->allowMultiSelect,
             "layout_type" => ($this->layoutType ?? PollLayoutType::DEFAULT)->value

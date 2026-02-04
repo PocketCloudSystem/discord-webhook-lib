@@ -3,14 +3,13 @@
 namespace r3pt1s\discord\webhook\message\embed;
 
 use JsonSerializable;
-use pmmp\thread\ThreadSafe;
 use r3pt1s\discord\webhook\WebhookHelper;
 
-final class EmbedProvider extends ThreadSafe implements JsonSerializable {
+final readonly class EmbedProvider implements JsonSerializable {
 
     private function __construct(
-        private readonly ?string $name,
-        private readonly ?string $url
+        private ?string $name,
+        private ?string $url
     ) {}
 
     public function getName(): ?string {

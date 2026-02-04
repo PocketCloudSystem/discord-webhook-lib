@@ -3,14 +3,13 @@
 namespace r3pt1s\discord\webhook\message\attachment;
 
 use JsonSerializable;
-use pmmp\thread\ThreadSafe;
 use r3pt1s\discord\webhook\WebhookHelper;
 
-final class Attachment extends ThreadSafe implements JsonSerializable {
+final readonly class Attachment implements JsonSerializable {
 
     public function __construct(
-        private readonly int $id,
-        private readonly string $fileName
+        private int $id,
+        private string $fileName
     ) {}
 
     public function getId(): int {

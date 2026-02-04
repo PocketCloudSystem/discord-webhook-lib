@@ -3,13 +3,12 @@
 namespace r3pt1s\discord\webhook\message\component\misc;
 
 use JsonSerializable;
-use pmmp\thread\ThreadSafe;
 
-final class SelectDefaultValue extends ThreadSafe implements JsonSerializable {
+final readonly class SelectDefaultValue implements JsonSerializable {
 
     private function __construct(
-        private readonly string $snowflakeId,
-        private readonly DefaultValueRepresentationType $representationType
+        private string $snowflakeId,
+        private DefaultValueRepresentationType $representationType
     ) {}
 
     public function getSnowflakeId(): string {

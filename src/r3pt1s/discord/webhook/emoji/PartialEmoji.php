@@ -3,14 +3,13 @@
 namespace r3pt1s\discord\webhook\emoji;
 
 use JsonSerializable;
-use pmmp\thread\ThreadSafe;
 use r3pt1s\discord\webhook\WebhookHelper;
 
-final class PartialEmoji extends ThreadSafe implements JsonSerializable {
+final readonly class PartialEmoji implements JsonSerializable {
 
     public function __construct(
-        private readonly string $emojiId,
-        private readonly string $emojiName
+        private string $emojiId,
+        private string $emojiName
     ) {}
 
     public function getEmojiId(): string {
