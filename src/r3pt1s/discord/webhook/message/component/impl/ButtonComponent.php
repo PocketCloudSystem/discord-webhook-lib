@@ -56,11 +56,11 @@ final class ButtonComponent extends CustomComponent implements ActionRowChildCom
         return new self($customId, ButtonStyle::DANGER, ["label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
     }
 
-    public static function link(string $customId, string $url, ?string $label = null, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
-        return new self($customId, ButtonStyle::LINK, ["url" => $url, "label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
+    public static function link(string $url, ?string $label = null, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
+        return new self("", ButtonStyle::LINK, ["url" => $url, "label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
     }
 
-    public static function premium(string $customId, string $skuId, ?string $label = null, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
-        return new self($customId, ButtonStyle::PREMIUM, ["sku_id" => $skuId, "label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
+    public static function premium(string $skuId, ?string $label = null, ?PartialEmoji $emoji = null, ?bool $disabled = null): ButtonComponent {
+        return new self("", ButtonStyle::PREMIUM, ["sku_id" => $skuId, "label" => $label, "emoji" => $emoji, "disabled" => $disabled]);
     }
 }
