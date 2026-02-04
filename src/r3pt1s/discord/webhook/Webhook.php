@@ -21,4 +21,8 @@ final class Webhook extends ThreadSafe {
     public function getUrl(): string {
         return $this->url;
     }
+
+    public static function create(string $url): self {
+        return new self($url);
+    }
 }
