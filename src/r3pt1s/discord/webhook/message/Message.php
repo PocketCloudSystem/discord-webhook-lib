@@ -2,15 +2,30 @@
 
 namespace r3pt1s\discord\webhook\message;
 
+use CURLFile;
 use InvalidArgumentException;
+use JsonException;
+use JsonSerializable;
+use LogicException;
 use pmmp\thread\ThreadSafe;
 use pmmp\thread\ThreadSafeArray;
+use pocketcloud\cloud\exception\UnsupportedOperationException;
+use pocketcloud\cloud\scheduler\AsyncPool;
+use pocketcloud\cloud\util\promise\Promise;
+use r3pt1s\discord\webhook\message\attachment\Attachment;
+use r3pt1s\discord\webhook\message\component\MessageComponent;
+use r3pt1s\discord\webhook\message\embed\Embed;
+use r3pt1s\discord\webhook\message\mention\AllowedMention;
 use r3pt1s\discord\webhook\poll\Poll;
+use r3pt1s\discord\webhook\task\DiscordSendDataTask;
+use r3pt1s\discord\webhook\Webhook;
 
-final class Message extends ThreadSafe {
+final class Message extends ThreadSafe implements JsonSerializable {
 
     public const int MAX_CONTENT_CHARACTERS = 2000;
     public const int MAX_EMBEDS = 10;
+
+    private int $internalFileCounter = 0;
 
     private string $content = "";
     private ?string $username = null;
@@ -18,6 +33,7 @@ final class Message extends ThreadSafe {
     private bool $textToSpeech = false;
 
     private ThreadSafeArray $embeds;
+    private ?AllowedMention $allowedMention = null;
     private ThreadSafeArray $components;
     private ThreadSafeArray $files;
     private ThreadSafeArray $attachments;
@@ -26,12 +42,51 @@ final class Message extends ThreadSafe {
     private ThreadSafeArray $threadAppliedTags;
     private ?Poll $poll = null;
 
-    public function __construct() {
+    /**
+     * @param bool $wait Waits for server confirmation of message send before response, and returns the created message body (defaults to false; when false a message that is not saved does not return an error)
+     * @param string|null $threadId Send a message to the specified thread within a webhook's channel. The thread will automatically be unarchived.
+     * @param bool $withComponents whether to respect the components field of the request. When enabled, allows application-owned webhooks to use all components and non-owned webhooks to use non-interactive components. (defaults to false)
+     */
+    public function __construct(
+        private readonly bool $wait,
+        private readonly ?string $threadId = null,
+        private readonly bool $withComponents = false,
+        private readonly ?Webhook $webhook = null
+    ) {
         $this->embeds = new ThreadSafeArray();
         $this->components = new ThreadSafeArray();
         $this->files = new ThreadSafeArray();
         $this->attachments = new ThreadSafeArray();
         $this->threadAppliedTags = new ThreadSafeArray();
+    }
+
+    public function send(): Promise {
+        if ($this->webhook === null) throw new LogicException("Please create a message via Webhook->createMessage()");
+        $promise = new Promise();
+        AsyncPool::getInstance()->submitTask(new DiscordSendDataTask($this->webhook->getUrl(), $this, static function (bool|string $response, int $statusCode) use ($promise): void {
+            if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
+                $promise->reject([$response, $statusCode]);
+                return;
+            }
+
+            $promise->resolve([$response, $statusCode]);
+        }));
+
+        return $promise;
+    }
+
+    public function sendWithDiffWebhook(Webhook $webhook): Promise {
+        $promise = new Promise();
+        AsyncPool::getInstance()->submitTask(new DiscordSendDataTask($webhook->getUrl(), $this, static function (bool|string $response, int $statusCode) use ($promise): void {
+            if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
+                $promise->reject([$response, $statusCode]);
+                return;
+            }
+
+            $promise->resolve([$response, $statusCode]);
+        }));
+
+        return $promise;
     }
 
     /**
@@ -61,12 +116,38 @@ final class Message extends ThreadSafe {
         return $this;
     }
 
-    public function addEmbed(): void {
-        //TODO
+    /**
+     * @see Embed::create()
+     * @param Embed $embed
+     * @return $this
+     */
+    public function addEmbed(Embed $embed): self {
+        if (count($this->embeds) == self::MAX_EMBEDS) throw new UnsupportedOperationException("Failed to add embed, max amount of embeds (" . self::MAX_EMBEDS . ") reached");
+        $this->embeds[] = $embed;
+        return $this;
     }
 
-    public function addComponent(): void {
-        //TODO
+    /**
+     * @see AllowedMention::create()
+     * @param AllowedMention $allowedMention
+     * @return $this
+     */
+    public function setAllowedMention(AllowedMention $allowedMention): self {
+        $this->allowedMention = $allowedMention;
+        return $this;
+    }
+
+    public function addComponent(MessageComponent $component): self {
+        $this->components[] = $component;
+        return $this;
+    }
+
+    public function addFile(string $filePath, ?string $mimeType = null, ?string $postedFileName = null): self {
+        if (!file_exists($filePath)) throw new InvalidArgumentException("File $filePath does not exist");
+        $attachmentId = $this->internalFileCounter++;
+        $this->files[$attachmentId] = ThreadSafeArray::fromArray(["filename" => $filePath, "mime_type" => $mimeType, "posted_filename" => $postedFileName ??= basename($filePath)]);
+        $this->attachments[$attachmentId] = new Attachment($attachmentId, $postedFileName);
+        return $this;
     }
 
     public function addFlag(MessageFlag $flag): self {
@@ -74,12 +155,36 @@ final class Message extends ThreadSafe {
         return $this;
     }
 
+    /**
+     * If set, a new thread with the applied name will be created
+     * @param string|null $threadName
+     * @return $this
+     */
     public function setThreadName(?string $threadName): self {
         $this->threadName = $threadName;
         return $this;
     }
 
+    /**
+     * Set the tags that will be applied to the thread
+     * You have to use the tag ids
+     * @param array $threadAppliedTagIds
+     * @return $this
+     */
+    public function setThreadAppliedTags(array $threadAppliedTagIds): self {
+       $this->threadAppliedTags = ThreadSafeArray::fromArray($threadAppliedTagIds);
+        return $this;
+    }
 
+    /**
+     * @see Poll::create()
+     * @param Poll $poll
+     * @return $this
+     */
+    public function setPoll(Poll $poll): self {
+        $this->poll = $poll;
+        return $this;
+    }
 
     public function isFlagSet(MessageFlag $flag): bool {
         return $this->flags & $flag->value;
@@ -103,6 +208,10 @@ final class Message extends ThreadSafe {
 
     public function getEmbeds(): ThreadSafeArray {
         return $this->embeds;
+    }
+
+    public function getAllowedMention(): ?AllowedMention {
+        return $this->allowedMention;
     }
 
     public function getComponents(): ThreadSafeArray {
@@ -131,5 +240,46 @@ final class Message extends ThreadSafe {
 
     public function getPoll(): ?Poll {
         return $this->poll;
+    }
+
+    public function isWait(): bool {
+        return $this->wait;
+    }
+
+    public function getThreadId(): ?string {
+        return $this->threadId;
+    }
+
+    public function isWithComponents(): bool {
+        return $this->withComponents;
+    }
+
+    /**
+     * @throws JsonException
+     */
+    public function jsonSerialize(): array {
+        $data = [
+            "content" => $this->content,
+            "tts" => $this->textToSpeech,
+            "embeds" => (array) $this->embeds
+        ];
+
+        if ($this->username !== null) $data["username"] = $this->username;
+        if ($this->avatarUrl !== null) $data["avatar_url"] = $this->avatarUrl;
+        if ($this->allowedMention !== null) $data["allowed_mentions"] = $this->allowedMention;
+        if (!empty($this->components)) $data["components"] = (array) $this->components;
+        if ($this->flags !== 0) $data["flags"] = $this->flags;
+        if ($this->threadName !== null) $data["thread_name"] = $this->threadName;
+        if (!empty($this->threadAppliedTags)) $data["applied_tags"] = (array) $this->threadAppliedTags;
+        if ($this->poll !== null) $data["poll"] = $this->poll;
+        if (!empty($this->files)) {
+            $data["attachments"] = (array) $this->attachments;
+            $data["payload_json"] = json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+            foreach ($this->files as $i => $fileData) {
+                $data["files[$i]"] = new CURLFile(...$fileData);
+            }
+        }
+
+        return $data;
     }
 }

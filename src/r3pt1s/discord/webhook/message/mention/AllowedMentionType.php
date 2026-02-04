@@ -1,6 +1,6 @@
 <?php
 
-namespace r3pt1s\discord\webhook\message;
+namespace r3pt1s\discord\webhook\message\mention;
 
 enum AllowedMentionType: string {
 
