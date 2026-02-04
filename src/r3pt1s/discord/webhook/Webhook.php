@@ -15,7 +15,7 @@ final class Webhook extends ThreadSafe {
     ) {}
 
     public function createMessage(bool $wait, ?string $threadId = null, bool $withComponents = false): Message {
-        return new Message($wait, $threadId, $withComponents);
+        return new Message($wait, $threadId, $withComponents, $this);
     }
 
     public function getUrl(): string {
