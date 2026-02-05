@@ -67,7 +67,7 @@ final class Message implements Writeable {
                     return;
                 }
 
-                if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
+                if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || $response === false) {
                     $promise->reject([$response, $statusCode]);
                     return;
                 }
@@ -93,7 +93,7 @@ final class Message implements Writeable {
                     return;
                 }
 
-                if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
+                if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || $response === false) {
                     $promise->reject([$response, $statusCode]);
                     return;
                 }
