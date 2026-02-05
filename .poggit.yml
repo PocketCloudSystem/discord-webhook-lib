@@ -1,0 +1,6 @@
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/PocketCloudSystem/discord-webhook-lib
+build-by-default: true
+branches:
+- pmmmp
+projects: []
+...
