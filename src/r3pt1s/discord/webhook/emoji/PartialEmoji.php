@@ -8,7 +8,7 @@ use r3pt1s\discord\webhook\util\WebhookHelper;
 final readonly class PartialEmoji implements Writeable {
 
     public function __construct(
-        private string $emojiId,
+        private ?string $emojiId,
         private string $emojiName
     ) {}
 
@@ -29,5 +29,9 @@ final readonly class PartialEmoji implements Writeable {
 
     public static function create(string $emojiId, string $emojiName): self {
         return new self($emojiId, $emojiName);
+    }
+
+    public static function fromUnicode(string $unicode): self {
+        return new self(null, $unicode);
     }
 }

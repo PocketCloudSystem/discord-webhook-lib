@@ -63,7 +63,9 @@ final class Poll implements Writeable {
         ]);
     }
 
-    public static function create(string $question, int $timestamp = self::DEFAULT_EXPIRY_TIMESTAMP, bool $allowMultiSelect = false, PollLayoutType $layoutType = PollLayoutType::DEFAULT): Poll {
+    public static function create(string $question, ?int $timestamp = null, bool $allowMultiSelect = false, PollLayoutType $layoutType = PollLayoutType::DEFAULT): Poll {
+        $timestamp = $timestamp ?? time() + self::DEFAULT_EXPIRY_TIMESTAMP;
+        if (($timestamp - time()) > self::MAX_EXPIRY_TIMESTAMP) $timestamp = time() + self::MAX_EXPIRY_TIMESTAMP;
         return new Poll($question, gmdate("c", $timestamp), $allowMultiSelect, $layoutType);
     }
 }

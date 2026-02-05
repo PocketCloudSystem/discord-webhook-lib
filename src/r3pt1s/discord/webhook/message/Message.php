@@ -6,7 +6,6 @@ use CURLFile;
 use InvalidArgumentException;
 use JsonException;
 use LogicException;
-use pmmp\thread\ThreadSafeArray;
 use pocketcloud\cloud\exception\UnsupportedOperationException;
 use pocketcloud\cloud\scheduler\AsyncPool;
 use pocketcloud\cloud\util\misc\Writeable;
@@ -61,7 +60,7 @@ final class Message implements Writeable {
             $this->wait,
             $this->threadId,
             $this->withComponents,
-            ThreadSafeArray::fromArray($this->write()),
+            serialize($this->write()),
             static function (bool|string $response, int $statusCode) use ($promise): void {
                 if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
                     $promise->reject([$response, $statusCode]);
@@ -82,7 +81,7 @@ final class Message implements Writeable {
             $this->wait,
             $this->threadId,
             $this->withComponents,
-            ThreadSafeArray::fromArray($this->write()),
+            serialize($this->write()),
             static function (bool|string $response, int $statusCode) use ($promise): void {
                 if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
                     $promise->reject([$response, $statusCode]);
@@ -276,12 +275,12 @@ final class Message implements Writeable {
 
         if ($this->username !== null) $data["username"] = $this->username;
         if ($this->avatarUrl !== null) $data["avatar_url"] = $this->avatarUrl;
-        if ($this->allowedMention !== null) $data["allowed_mentions"] = $this->allowedMention?->write();
+        if ($this->allowedMention !== null) $data["allowed_mentions"] = $this->allowedMention->write();
         if (count($this->components) > 0) $data["components"] = array_map(fn(MessageComponent $component) => $component->write(), $this->components);
         if ($this->flags !== 0) $data["flags"] = $this->flags;
         if ($this->threadName !== null) $data["thread_name"] = $this->threadName;
         if (count($this->threadAppliedTags) > 0) $data["applied_tags"] = $this->threadAppliedTags;
-        if ($this->poll !== null) $data["poll"] = $this->poll?->write();
+        if ($this->poll !== null) $data["poll"] = $this->poll->write();
         if (count($this->files) > 0) {
             $data["attachments"] = array_map(fn(Attachment $attachment) => $attachment->write(), $this->attachments);
             $payloadJson = json_encode($data, JSON_THROW_ON_ERROR);

@@ -4,7 +4,6 @@ namespace r3pt1s\discord\webhook\task;
 
 use Closure;
 use CURLFile;
-use pmmp\thread\ThreadSafeArray;
 use pocketcloud\cloud\scheduler\AsyncTask;
 use r3pt1s\discord\webhook\message\Message;
 
@@ -15,7 +14,7 @@ final class DiscordSendDataTask extends AsyncTask {
         private readonly bool $wait,
         private readonly ?int $threadId,
         private readonly bool $withComponents,
-        private readonly ThreadSafeArray $requestData,
+        private readonly string $requestData,
         private readonly ?Closure $completionCallback = null
     ) {}
 
@@ -30,7 +29,8 @@ final class DiscordSendDataTask extends AsyncTask {
 
         $ch = curl_init($url);
 
-        $actualData = Message::convertFilesData(iterator_to_array($this->requestData));
+        $requestData = unserialize($this->requestData);
+        $actualData = Message::convertFilesData(iterator_to_array($requestData));
 
         $hasFiles = false;
         foreach ($actualData as $value) {
