@@ -3,7 +3,7 @@
 namespace r3pt1s\discord\webhook\message\component\impl;
 
 use InvalidArgumentException;
-use pocketcloud\cloud\exception\UnsupportedOperationException;
+use LogicException;
 use r3pt1s\discord\webhook\emoji\PartialEmoji;
 use r3pt1s\discord\webhook\message\component\CustomComponent;
 use r3pt1s\discord\webhook\message\component\misc\ActionRowChildComponent;
@@ -38,7 +38,7 @@ final class StringSelectComponent extends CustomComponent implements ActionRowCh
     }
 
     public function addOption(string $label, string $value, ?string $description = null, ?PartialEmoji $emoji = null, ?bool $default = null): self {
-        if (count($this->options) == self::MAX_OPTIONS) throw new UnsupportedOperationException("Failed to add option, max amount of options (" . self::MAX_OPTIONS . ") reached");
+        if (count($this->options) == self::MAX_OPTIONS) throw new LogicException("Failed to add option, max amount of options (" . self::MAX_OPTIONS . ") reached");
         $this->options[] = SelectOption::create($label, $value, $description, $emoji, $default);
         return $this;
     }

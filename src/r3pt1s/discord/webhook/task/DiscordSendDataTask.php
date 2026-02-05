@@ -6,6 +6,7 @@ use Closure;
 use CURLFile;
 use pocketcloud\cloud\scheduler\AsyncTask;
 use r3pt1s\discord\webhook\message\Message;
+use Throwable;
 
 final class DiscordSendDataTask extends AsyncTask {
 
@@ -63,6 +64,11 @@ final class DiscordSendDataTask extends AsyncTask {
     }
 
     public function onCompletion(): void {
+        $result = $this->getResult();
+        if ($this->completionCallback !== null) ($this->completionCallback)(...$result);
+    }
+
+    public function onFailure(Throwable $exception): void {
         $result = $this->getResult();
         if ($this->completionCallback !== null) ($this->completionCallback)(...$result);
     }

@@ -6,7 +6,6 @@ use CURLFile;
 use InvalidArgumentException;
 use JsonException;
 use LogicException;
-use pocketcloud\cloud\exception\UnsupportedOperationException;
 use pocketcloud\cloud\scheduler\AsyncPool;
 use pocketcloud\cloud\util\misc\Writeable;
 use pocketcloud\cloud\util\promise\Promise;
@@ -128,7 +127,7 @@ final class Message implements Writeable {
      * @return $this
      */
     public function addEmbed(Embed $embed): self {
-        if (count($this->embeds) == self::MAX_EMBEDS) throw new UnsupportedOperationException("Failed to add embed, max amount of embeds (" . self::MAX_EMBEDS . ") reached");
+        if (count($this->embeds) == self::MAX_EMBEDS) throw new LogicException("Failed to add embed, max amount of embeds (" . self::MAX_EMBEDS . ") reached");
         $this->embeds[] = $embed;
         return $this;
     }

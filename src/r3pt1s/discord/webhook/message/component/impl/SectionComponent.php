@@ -2,7 +2,7 @@
 
 namespace r3pt1s\discord\webhook\message\component\impl;
 
-use pocketcloud\cloud\exception\UnsupportedOperationException;
+use LogicException;
 use r3pt1s\discord\webhook\message\component\MessageComponent;
 use r3pt1s\discord\webhook\message\component\misc\ComponentType;
 use r3pt1s\discord\webhook\message\component\misc\ContainerChildComponent;
@@ -33,7 +33,7 @@ final class SectionComponent extends MessageComponent implements ContainerChildC
 
     public function getComponentData(): array {
         if (count($this->components) < self::MIN_COMPONENTS || count($this->components) > self::MAX_COMPONENTS)
-            throw new UnsupportedOperationException('Your $components cannot be less than ' . self::MIN_COMPONENTS . ' or greater than ' . self::MAX_COMPONENTS);
+            throw new LogicException('Your $components cannot be less than ' . self::MIN_COMPONENTS . ' or greater than ' . self::MAX_COMPONENTS);
 
         return [
             "components" => array_map(fn(MessageComponent $dV) => $dV->write(), $this->components),

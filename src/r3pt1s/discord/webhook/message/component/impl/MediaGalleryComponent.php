@@ -3,7 +3,7 @@
 namespace r3pt1s\discord\webhook\message\component\impl;
 
 use InvalidArgumentException;
-use pocketcloud\cloud\exception\UnsupportedOperationException;
+use LogicException;
 use r3pt1s\discord\webhook\message\component\MessageComponent;
 use r3pt1s\discord\webhook\message\component\misc\ComponentType;
 use r3pt1s\discord\webhook\message\component\misc\ContainerChildComponent;
@@ -32,7 +32,7 @@ final class MediaGalleryComponent extends MessageComponent implements ContainerC
     public function getComponentData(): array {
         $itemsCount = count($this->items);
         if ($itemsCount < self::MIN_ITEMS || $itemsCount > self::MAX_ITEMS)
-            throw new UnsupportedOperationException('Your $items cannot be less than ' . self::MIN_ITEMS . ' or greater than ' . self::MAX_ITEMS);
+            throw new LogicException('Your $items cannot be less than ' . self::MIN_ITEMS . ' or greater than ' . self::MAX_ITEMS);
 
         return [
             "items" => array_map(fn(MediaGalleryItem $item) => $item->write(), $this->items),

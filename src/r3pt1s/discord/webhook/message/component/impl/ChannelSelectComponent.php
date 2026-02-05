@@ -2,7 +2,7 @@
 
 namespace r3pt1s\discord\webhook\message\component\impl;
 
-use pocketcloud\cloud\exception\UnsupportedOperationException;
+use LogicException;
 use r3pt1s\discord\webhook\message\component\CustomComponent;
 use r3pt1s\discord\webhook\message\component\misc\ActionRowChildComponent;
 use r3pt1s\discord\webhook\message\component\misc\ComponentType;
@@ -36,10 +36,10 @@ final class ChannelSelectComponent extends CustomComponent implements ActionRowC
     public function getComponentData(): array {
         $defValuesCount = count($this->defaultValues);
         if ($this->minValues !== null && $defValuesCount < $this->minValues)
-            throw new UnsupportedOperationException('Your $defaultValues cannot be less than ' . $this->minValues);
+            throw new LogicException('Your $defaultValues cannot be less than ' . $this->minValues);
 
         if ($this->maxValues !== null && $defValuesCount > $this->maxValues)
-            throw new UnsupportedOperationException('Your $defaultValues cannot be greater than ' . $this->maxValues);
+            throw new LogicException('Your $defaultValues cannot be greater than ' . $this->maxValues);
 
         return [
             "default_values" => array_map(fn(SelectDefaultValue $dV) => $dV->write(), $this->defaultValues),
