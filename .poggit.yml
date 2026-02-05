@@ -2,5 +2,9 @@
 build-by-default: true
 branches:
 - pmmp
-projects: []
+projects:
+  discord-webhook-lib:
+    path: ""
+    model: virion
+    type: library
 ...
