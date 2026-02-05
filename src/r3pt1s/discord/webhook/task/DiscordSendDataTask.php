@@ -69,7 +69,6 @@ final class DiscordSendDataTask extends AsyncTask {
     }
 
     public function onFailure(Throwable $exception): void {
-        $result = $this->getResult();
-        if ($this->completionCallback !== null) ($this->completionCallback)(...$result);
+        if ($this->completionCallback !== null) ($this->completionCallback)($exception, null);
     }
 }

@@ -16,6 +16,7 @@ use r3pt1s\discord\webhook\message\mention\AllowedMention;
 use r3pt1s\discord\webhook\poll\Poll;
 use r3pt1s\discord\webhook\task\DiscordSendDataTask;
 use r3pt1s\discord\webhook\Webhook;
+use Throwable;
 
 final class Message implements Writeable {
 
@@ -60,7 +61,12 @@ final class Message implements Writeable {
             $this->threadId,
             $this->withComponents,
             serialize($this->write()),
-            static function (bool|string $response, int $statusCode) use ($promise): void {
+            static function (bool|string|Throwable $response, ?int $statusCode) use ($promise): void {
+                if ($statusCode === null) {
+                    $promise->reject([$response, $statusCode]);
+                    return;
+                }
+
                 if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
                     $promise->reject([$response, $statusCode]);
                     return;
@@ -81,7 +87,12 @@ final class Message implements Writeable {
             $this->threadId,
             $this->withComponents,
             serialize($this->write()),
-            static function (bool|string $response, int $statusCode) use ($promise): void {
+            static function (bool|string|Throwable $response, ?int $statusCode) use ($promise): void {
+                if ($statusCode === null) {
+                    $promise->reject([$response, $statusCode]);
+                    return;
+                }
+
                 if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || !$response) {
                     $promise->reject([$response, $statusCode]);
                     return;
