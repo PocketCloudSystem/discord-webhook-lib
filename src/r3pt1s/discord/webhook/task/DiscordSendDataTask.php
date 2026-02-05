@@ -45,7 +45,7 @@ final class DiscordSendDataTask extends AsyncTask {
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
         if ($hasFiles) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $actualData);
@@ -59,7 +59,7 @@ final class DiscordSendDataTask extends AsyncTask {
         $response = curl_exec($ch);
         $responseCode = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
 
-        $this->setResult([$response, $responseCode]);
+        $this->setResult([$response, $responseCode, curl_error($ch), curl_errno($ch)]);
         curl_close($ch);
     }
 

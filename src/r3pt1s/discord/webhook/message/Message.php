@@ -54,29 +54,7 @@ final class Message implements Writeable {
 
     public function send(): Promise {
         if ($this->webhook === null) throw new LogicException("Please create a message via Webhook->createMessage()");
-        $promise = new Promise();
-        AsyncPool::getInstance()->submitTask(new DiscordSendDataTask(
-            $this->webhook->getUrl(),
-            $this->wait,
-            $this->threadId,
-            $this->withComponents,
-            serialize($this->write()),
-            static function (bool|string|Throwable $response, ?int $statusCode) use ($promise): void {
-                if ($statusCode === null) {
-                    $promise->reject([$response, $statusCode]);
-                    return;
-                }
-
-                if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || $response === false) {
-                    $promise->reject([$response, $statusCode]);
-                    return;
-                }
-
-                $promise->resolve([$response, $statusCode]);
-            }
-        ));
-
-        return $promise;
+        return $this->sendWithDiffWebhook($this->webhook);
     }
 
     public function sendWithDiffWebhook(Webhook $webhook): Promise {
@@ -87,18 +65,18 @@ final class Message implements Writeable {
             $this->threadId,
             $this->withComponents,
             serialize($this->write()),
-            static function (bool|string|Throwable $response, ?int $statusCode) use ($promise): void {
+            static function (bool|string|Throwable $response, ?int $statusCode, string $curlError, int $curlErrno) use ($promise): void {
                 if ($statusCode === null) {
-                    $promise->reject([$response, $statusCode]);
+                    $promise->reject([$response, $statusCode, $curlError, $curlErrno]);
                     return;
                 }
 
                 if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || $response === false) {
-                    $promise->reject([$response, $statusCode]);
+                    $promise->reject([$response, $statusCode, $curlError, $curlErrno]);
                     return;
                 }
 
-                $promise->resolve([$response, $statusCode]);
+                $promise->resolve([$response, $statusCode, $curlError, $curlErrno]);
             }
         ));
 
