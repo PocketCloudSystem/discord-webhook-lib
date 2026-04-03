@@ -11,7 +11,7 @@ final readonly class Webhook {
      */
     public function __construct(private string $url) {}
 
-    public function createMessage(bool $wait, ?string $threadId = null, bool $withComponents = false): Message {
+    public function createMessage(bool $wait = false, ?string $threadId = null, bool $withComponents = false): Message {
         return new Message($wait, $threadId, $withComponents, $this);
     }
 
