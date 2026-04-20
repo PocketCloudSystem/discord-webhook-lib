@@ -13,7 +13,7 @@ final class DiscordSendDataTask extends AsyncTask {
     public function __construct(
         private readonly string $url,
         private readonly bool $wait,
-        private readonly ?int $threadId,
+        private readonly ?string $threadId,
         private readonly bool $withComponents,
         private readonly string $requestData,
         private readonly ?Closure $completionCallback = null
