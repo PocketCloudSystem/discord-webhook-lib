@@ -16,6 +16,11 @@ final class ActionRowComponent extends MessageComponent implements ContainerChil
         return $this;
     }
 
+    public function addComponents(ActionRowChildComponent ...$components): self {
+        foreach ($components as $component) $this->addComponent($component);
+        return $this;
+    }
+
     public function getType(): ComponentType {
         return ComponentType::ACTION_ROW;
     }
@@ -30,5 +35,9 @@ final class ActionRowComponent extends MessageComponent implements ContainerChil
 
     public static function create(): self {
         return new self();
+    }
+
+    public static function with(ActionRowChildComponent ...$components): self {
+        return self::create()->addComponents(...$components);
     }
 }

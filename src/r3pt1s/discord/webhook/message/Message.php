@@ -2,11 +2,11 @@
 
 namespace r3pt1s\discord\webhook\message;
 
+use Closure;
 use CURLFile;
 use InvalidArgumentException;
 use JsonException;
 use LogicException;
-use pocketcloud\cloud\scheduler\AsyncPool;
 use pocketcloud\cloud\util\misc\Writeable;
 use pocketcloud\cloud\util\promise\Promise;
 use r3pt1s\discord\webhook\message\attachment\Attachment;
@@ -15,10 +15,9 @@ use r3pt1s\discord\webhook\message\component\misc\ActionRowChildComponent;
 use r3pt1s\discord\webhook\message\embed\Embed;
 use r3pt1s\discord\webhook\message\mention\AllowedMention;
 use r3pt1s\discord\webhook\poll\Poll;
-use r3pt1s\discord\webhook\task\DiscordSendDataTask;
+use r3pt1s\discord\webhook\util\WebhookHelper;
 use r3pt1s\discord\webhook\Webhook;
 use RuntimeException;
-use Throwable;
 
 final class Message implements Writeable {
 
@@ -56,33 +55,21 @@ final class Message implements Writeable {
 
     public function send(): Promise {
         if ($this->webhook === null) throw new LogicException("Please create a message via Webhook->createMessage()");
-        return $this->sendWithDiffWebhook($this->webhook);
+        return $this->webhook->send($this);
     }
 
     public function sendWithDiffWebhook(Webhook $webhook): Promise {
-        $promise = new Promise();
-        AsyncPool::getInstance()->submitTask(new DiscordSendDataTask(
-            $webhook->getUrl(),
-            $this->wait,
-            $this->threadId,
-            $this->withComponents,
-            serialize($this->write()),
-            static function (bool|string|Throwable $response, ?int $statusCode, string $curlError, int $curlErrno) use ($promise): void {
-                if ($statusCode === null) {
-                    $promise->reject([$response, $statusCode, $curlError, $curlErrno]);
-                    return;
-                }
+        return $webhook->send($this);
+    }
 
-                if (str_starts_with((string) $statusCode, "4") || str_starts_with((string) $statusCode, "5") || $response === false) {
-                    $promise->reject([$response, $statusCode, $curlError, $curlErrno]);
-                    return;
-                }
-
-                $promise->resolve([$response, $statusCode, $curlError, $curlErrno]);
-            }
-        ));
-
-        return $promise;
+    /**
+     * Just a function to modify the message without interrupting the chain
+     * @param Closure $tapFn
+     * @return self
+     */
+    public function tap(Closure $tapFn): self {
+        ($tapFn)($this);
+        return $this;
     }
 
     /**
@@ -102,8 +89,8 @@ final class Message implements Writeable {
     }
 
     public function setAvatarUrl(string $avatarUrl): self {
-        if (filter_var($avatarUrl, FILTER_VALIDATE_URL)) $this->avatarUrl = $avatarUrl;
-        else throw new InvalidArgumentException("AvatarUrl must be a valid URL");
+        WebhookHelper::validateUrl($avatarUrl, "AvatarUrl");
+        $this->avatarUrl = $avatarUrl;
         return $this;
     }
 
@@ -120,6 +107,21 @@ final class Message implements Writeable {
     public function addEmbed(Embed $embed): self {
         if (count($this->embeds) == self::MAX_EMBEDS) throw new LogicException("Failed to add embed, max amount of embeds (" . self::MAX_EMBEDS . ") reached");
         $this->embeds[] = $embed;
+        return $this;
+    }
+
+    public function addEmbedIf(Closure $conditionFn, Embed $embed): self {
+        if ($conditionFn()) $this->addEmbed($embed);
+        return $this;
+    }
+
+    public function addEmbeds(Embed ...$embeds): self {
+        foreach ($embeds as $embed) $this->addEmbed($embed);
+        return $this;
+    }
+
+    public function addEmbedsIf(Closure $conditionFn, Embed ...$embeds): self {
+        if ($conditionFn()) $this->addEmbeds(...$embeds);
         return $this;
     }
 
@@ -155,6 +157,11 @@ final class Message implements Writeable {
 
     public function addFlag(MessageFlag $flag): self {
         $this->flags |= $flag->value;
+        return $this;
+    }
+
+    public function removeFlags(MessageFlag ...$flags): self {
+        foreach ($flags as $flag) $this->flags &= ~$flag->value;
         return $this;
     }
 

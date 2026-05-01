@@ -2,10 +2,17 @@
 
 namespace r3pt1s\discord\webhook\message\embed;
 
+use Closure;
+use InvalidArgumentException;
+use LogicException;
 use pocketcloud\cloud\util\misc\Writeable;
 use r3pt1s\discord\webhook\util\WebhookHelper;
 
 final class Embed implements Writeable {
+
+    public const int MAX_FIELDS = 25;
+    public const int MAX_TITLE_LENGTH = 256;
+    public const int MAX_DESCRIPTION_LENGTH = 4096;
 
     private ?string $title = null;
     private ?string $description = null;
@@ -25,16 +32,19 @@ final class Embed implements Writeable {
     private function __construct() {}
 
     public function setTitle(?string $title): self {
+        if ($title !== null && strlen($title) > self::MAX_TITLE_LENGTH) throw new LogicException("Embed titles are limited to ".self::MAX_TITLE_LENGTH . " characters");
         $this->title = $title;
         return $this;
     }
 
     public function setDescription(?string $description): self {
+        if ($description !== null && strlen($description) > self::MAX_DESCRIPTION_LENGTH) throw new LogicException("Embed descriptions are limited to ".self::MAX_DESCRIPTION_LENGTH . " characters");
         $this->description = $description;
         return $this;
     }
 
     public function setUrl(?string $url): self {
+        WebhookHelper::validateUrl($url);
         $this->url = $url;
         return $this;
     }
@@ -44,8 +54,23 @@ final class Embed implements Writeable {
         return $this;
     }
 
+    public function setTimestampNow(): self {
+        $this->timestamp = time();
+        return $this;
+    }
+
     public function setColor(?int $color): self {
         $this->color = $color;
+        return $this;
+    }
+
+    public function setColorRgb(int $red, int $green, int $blue): self {
+        $this->setColorHex(sprintf("#%02x%02x%02x", $red, $green, $blue));
+        return $this;
+    }
+
+    public function setColorHex(string $hex): self {
+        $this->color = hexdec(ltrim($hex, "#"));
         return $this;
     }
     
@@ -54,33 +79,64 @@ final class Embed implements Writeable {
         return $this;
     }
 
+    public function addFieldIf(Closure $conditionFn, string $name, string $value, ?bool $inline = null): self {
+        if ($conditionFn()) $this->addField($name, $value, $inline);
+        return $this;
+    }
+
+    public function addFields(EmbedField ...$fields): self {
+        foreach ($fields as $field) $this->fields[] = $field;
+        return $this;
+    }
+
+    public function addFieldsIf(Closure $conditionFn, EmbedField ...$fields): self {
+        if ($conditionFn()) $this->addFields(...$fields);
+        return $this;
+    }
+
     public function setAuthor(string $name, ?string $url = null, ?string $iconUrl = null, ?string $proxyIconUrl = null): self {
+        WebhookHelper::validateUrl($url);
+        WebhookHelper::validateUrl($iconUrl, "IconUrl");
+        WebhookHelper::validateUrl($proxyIconUrl, "ProxyIconUrl");
         $this->author = EmbedAuthor::create($name, $url, $iconUrl, $proxyIconUrl);
         return $this;
     }
 
     public function setFooter(string $text, ?string $iconUrl = null, ?string $proxyIconUrl = null): self {
+        WebhookHelper::validateUrl($iconUrl, "IconUrl");
+        WebhookHelper::validateUrl($proxyIconUrl, "ProxyIconUrl");
         $this->footer = EmbedFooter::create($text, $iconUrl, $proxyIconUrl);
         return $this;
     }
 
     public function setImage(string $url, ?string $proxyUrl = null, ?int $height = null, ?int $width = null): self {
+        WebhookHelper::validateUrl($url);
+        WebhookHelper::validateUrl($proxyUrl, "ProxyUrl");
         $this->image = EmbedImage::create($url, $proxyUrl, $height, $width);
         return $this;
     }
 
     public function setThumbnail(string $url, ?string $proxyUrl = null, ?int $height = null, ?int $width = null): self {
+        WebhookHelper::validateUrl($url);
+        WebhookHelper::validateUrl($proxyUrl, "ProxyUrl");
         $this->thumbnail = EmbedImage::create($url, $proxyUrl, $height, $width);
         return $this;
     }
 
     public function setVideo(string $url, ?string $proxyUrl = null, ?int $height = null, ?int $width = null): self {
+        WebhookHelper::validateUrl($url);
+        WebhookHelper::validateUrl($proxyUrl, "ProxyUrl");
         $this->video = EmbedVideo::create($url, $proxyUrl, $height, $width);
         return $this;
     }
 
     public function setProvider(?string $name = null, ?string $url = null): self {
         $this->provider = EmbedProvider::create($name, $url);
+        return $this;
+    }
+
+    public function clearFields(): self {
+        $this->fields = [];
         return $this;
     }
 
